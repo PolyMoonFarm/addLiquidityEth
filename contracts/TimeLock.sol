@@ -19,9 +19,9 @@ contract TimeLock {
 
 		router.addLiquidityETH{ value: msg.value }(
 			address(cc),
-			5e18,
-			5e18,
-			1e17,
+			5,
+			5,
+			1,
 			msg.sender,
 			block.timestamp + 100
 		);
