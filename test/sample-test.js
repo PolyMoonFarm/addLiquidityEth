@@ -1,35 +1,38 @@
 const { assert } = require("chai");
 
 describe("Influencer Solidity Contract Testing", function () {
+  let IUniswapV2Router02;
+
   let contract;
   let owner;
-  let cc;
-  const supply = 5;
+  let cloutCoin;
+  const supply = (100n * 10n ** 18n).toString();
   let cloutCoinAddress = 0x0dead;
 
   before("Should deploy the CloutCoin Contract", async () => {
-    owner = await ethers.getSigner(0);
     const CloutCoin = await ethers.getContractFactory("CloutCoin");
-    cc = await CloutCoin.deploy(supply);
-    await cc.deployed();
+    IUniswapV2Router02 = await ethers.getContractAt(
+      "IUniswapV2Router02",
+      "0x7a250d5630b4cf539739df2c5dacb4c659f2488d"
+    );
+
+    cloutCoin = await CloutCoin.deploy(supply);
+    await cloutCoin.deployed();
+    owner = await ethers.getSigner(0);
 
     //sets global clout coin address
-    cloutCoinAddress = cc.address;
-    console.log("cloutCoinAddress:", cc.address);
+    cloutCoinAddress = cloutCoin.address;
+    console.log("cloutCoinAddress:", cloutCoin.address);
 
-    let ccBalance = await cc.balanceOf(owner.address);
-    console.log("CCBalance", ccBalance.toString());
+    //gets the cloutclout balance
+    let cloutCoinBalance = await cloutCoin.balanceOf(owner.address);
+    console.log("cloutCoinBalance", cloutCoinBalance.toString());
   });
 
-  it("Should return the new greeting once it's changed", async function () {
+  it("deploy the timelock escrow contract", async function () {
     const TimeLock = await ethers.getContractFactory("TimeLock");
     contract = await TimeLock.deploy();
     owner = await ethers.getSigner(0);
-  });
-
-  it("Should return the current block timestamp", async () => {
-    let time = await contract.blockTime();
-    console.log(time.toString());
   });
 
   it("Create / add balance to a company", async () => {
@@ -37,38 +40,54 @@ describe("Influencer Solidity Contract Testing", function () {
     let depositAmount = await contract.companyDeposit({
       value: ethers.utils.parseEther("0.1"),
     });
-
-    // console.log(depositAmount);
   });
 
-  it("makeAddPool", async () => {
-    console.log("Owner", owner.address);
-    // await cc.approve(cc.address, 100);
-    // let allowance = await cc.allowance(owner.address, cc.address);
-    // console.log(allowance.toString());
+  it("makeAddPool front-end", async () => {
+    let valueEth = ethers.utils.parseEther("1");
+    let valueCC = ethers.utils.parseEther("10");
 
-    await cc.transfer(contract.address, 5);
+    // console.log(value.toString());
 
-    await owner.sendTransaction({
-      to: contract.address,
-      value: ethers.utils.parseEther("1"),
-    });
+    await cloutCoin.approve(
+      "0x7a250d5630b4cf539739df2c5dacb4c659f2488d",
+      valueCC
+    );
 
-    let ccBalance = await cc.balanceOf(contract.address);
-    console.log(ccBalance.toString());
-
-    await contract.makeAddPool(cc.address, {
-      value: ethers.utils.parseEther("1"),
-    });
-  });
-
-  it("makeAddPool2", async () => {
-    console.log("Owner", owner.address);
+    await IUniswapV2Router02.addLiquidityETH(
+      cloutCoin.address,
+      valueCC,
+      valueCC,
+      valueEth,
+      owner.address,
+      1911516272,
+      { value: valueEth }
+    );
   });
 
   // it("makeAddPool", async () => {
-  //   // console.log(cc);
-  //   // await cc.approve(cloutCoinAddress, 10000);
+  //   console.log("Owner", owner.address);
+  //   // await cloutCoin.approve(cloutCoin.address, 100);
+  //   // let allowance = await cloutCoin.allowance(owner.address, cloutCoin.address);
+  //   // console.log(allowance.toString());
+
+  //   await cloutCoin.transfer(contract.address, 5);
+
+  //   await owner.sendTransaction({
+  //     to: contract.address,
+  //     value: ethers.utils.parseEther("1"),
+  //   });
+
+  //   let cloutCoinBalance = await cloutCoin.balanceOf(contract.address);
+  //   console.log(cloutCoinBalance.toString());
+
+  //   await contract.makeAddPool(cloutCoin.address, {
+  //     value: ethers.utils.parseEther("1"),
+  //   });
+  // });
+
+  // it("makeAddPool", async () => {
+  //   // console.log(cloutCoin);
+  //   // await cloutCoin.approve(cloutCoinAddress, 10000);
   //   const IUniswapV2Router02 = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
 
   //   const uni = await ethers.getContractAt("IERC20", IUniswapV2Router02);
@@ -76,14 +95,14 @@ describe("Influencer Solidity Contract Testing", function () {
   //   let amountTokenDesired = ethers.utils.parseEther("5");
   //   let amountEthMin = ethers.utils.parseEther("0.1");
 
-  //   await cc.approve(IUniswapV2Router02, amountTokenDesired);
-  //   let val = await cc.allowance(owner.address, IUniswapV2Router02);
+  //   await cloutCoin.approve(IUniswapV2Router02, amountTokenDesired);
+  //   let val = await cloutCoin.allowance(owner.address, IUniswapV2Router02);
   //   console.log(val.toString());
 
-  //   await cc.connect(owner).approve(IUniswapV2Router02, amountTokenDesired);
+  //   await cloutCoin.connect(owner).approve(IUniswapV2Router02, amountTokenDesired);
 
-  //   // await cc.approve(contract.address, ethers.utils.parseEther("1"));
-  //   // let bal = await cc.allowance(owner.address, contract.address);
+  //   // await cloutCoin.approve(contract.address, ethers.utils.parseEther("1"));
+  //   // let bal = await cloutCoin.allowance(owner.address, contract.address);
   //   // console.log(bal.toString());
 
   //   // await contract.makeAddPool(
@@ -98,7 +117,7 @@ describe("Influencer Solidity Contract Testing", function () {
   //   // );
 
   //   await contract.makeAddPool(
-  //     cc.address,
+  //     cloutCoin.address,
   //     ethers.utils.parseEther("0.01"),
   //     ethers.utils.parseEther("0.01"),
   //     ethers.utils.parseEther("0.1"),
