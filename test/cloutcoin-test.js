@@ -4,7 +4,7 @@ describe("Influencer Solidity Contract Testing", function () {
   //   // let IUniswapV2Router02;
 
   //   // let contract;
-  let owner, addr1, addr2;
+  let owner, addr1, addr2, addr3;
   //   // let cloutCoinAddress = 0x0dead;
   const tName_ = "CloutCoin";
   const tSymbol_ = "CC";
@@ -17,7 +17,7 @@ describe("Influencer Solidity Contract Testing", function () {
 
     cloutcoin = await CloutCoin.deploy(tName_, tSymbol_, tSupply_);
     await cloutcoin.deployed();
-    [owner, addr1, addr2] = await ethers.getSigners();
+    [owner, addr1, addr2, addr3] = await ethers.getSigners();
     console.log("name: " + (await cloutcoin.name()));
     console.log("symbol: " + (await cloutcoin.symbol()));
     console.log("supply: " + (await cloutcoin.totalSupply()));
@@ -59,17 +59,34 @@ describe("Influencer Solidity Contract Testing", function () {
 
   it("lets an address send clout to another address", async () => {
     try {
-      let receipt1 = await cloutcoin.transfer(addr1.address, 2000);
-      assert.equal(await cloutcoin.balanceOf(addr1.address), 2000);
-      let receipt2 = await cloutcoin
-        .connect(addr1)
-        .transfer(addr2.address, 1000);
-      assert.equal(await cloutcoin.balanceOf(addr1.address), 1000);
-      assert.equal(await cloutcoin.balanceOf(addr2.address), 1000);
+      await cloutcoin.transfer(addr1.address, 10000);
+      assert.equal(await cloutcoin.balanceOf(addr1.address), 10000);
+      await cloutcoin.connect(addr1).transfer(addr2.address, 5000);
+      assert.equal(await cloutcoin.balanceOf(addr1.address), 5000);
       // console.log(receipt2);
     } catch (error) {
       console.log(error);
     }
+  });
+
+  // it("allows a token holder to  approve the transfer of tokens to the timelock contract address", async () => {
+  //     await timelock.transferToMe()
+  // });
+
+  it("allows a token holder to  approve the transfer of tokens to the timelock contract address", async () => {
+    // approve the transfer of tokens
+    await cloutcoin.connect(addr2).approve(timelock.address, 4000);
+
+    // check to see the
+    assert.equal(
+      await cloutcoin.allowance(addr2.address, timelock.address),
+      4000
+    );
+
+    let tx = await timelock.transferToMe(addr2.address, timelock.address, 4000);
+    console.log("tx: " + tx);
+
+    // assert.equal(await cloutcoin.balanceOf(timelock.address), 4000);
   });
 
   // it("Create/Add a balance to a project", async () => {
@@ -78,22 +95,20 @@ describe("Influencer Solidity Contract Testing", function () {
   //   });
   // });
 
-  it("lets a company send cloutcoin to the timelock contract", async () => {
-    try {
-      receipt = await cloutcoin.transfer(timelock.address, 1000);
-      assert.equal(await cloutcoin.balanceOf(timelock.address), 1000);
-      // console.log(receipt);
-    } catch (error) {
-      console.log(error);
-    }
-  });
+  // it("lets a company send cloutcoin to the timelock contract", async () => {
+  //   try {
+  //     receipt = await cloutcoin.connect(addr2).transfer(timelock.address, 2000);
+  //     assert.equal(await cloutcoin.balanceOf(timelock.address), 2000);
+  //     console.log("mapping: " + (await timelock.companyBal(addr2.address)));
+  //     console.log("mapping1: " + (await timelock.companyBal(addr3.address)));
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // });
 
-  it("updates the companies mapping via the receive func", async () => {
-    console.log(
-      "company mapping: " +
-        (await timelock.comanyBal[0x90f79bf6eb2c4f870365e785982e1f101e93b906])
-    );
-  });
+  // it("updates the companies mapping via the receive func", async () => {
+  //   await
+  // });
 
   //   // it("makeAddPool front-end", async () => {
   //   //   let valueEth = ethers.utils.parseEther("1");

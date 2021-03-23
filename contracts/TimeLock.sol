@@ -8,6 +8,11 @@ import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router01.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract TimeLock {
+
+	constructor() {
+		companyBal[0x90F79bf6EB2c4f870365E785982E1f101E93b906] += 2000;
+	}
+
 	IUniswapV2Router02 router =
 		IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
 
@@ -26,8 +31,22 @@ contract TimeLock {
 			block.timestamp + 100
 		);
 	}
+	// NEW CODE BEGIN
 
-	// receive() external payable {}
+
+
+
+	function transferToMe(address _owner, address _token, uint _amount) public {
+      ERC20(_token).transferFrom(_owner, address(this), _amount);
+    }
+
+	fallback() external payable {}
+
+
+
+
+	// New CODE END
+
 
 	// 	function makeAddPool(
 	// 	address cloutCoinAddress,
@@ -71,6 +90,7 @@ contract TimeLock {
 
 	event companyDepositApproved(address, uint256);
 
+
 	/** @dev Allows comapnies to deposit
 	 */
 	function companyDeposit(uint _value) public payable {
@@ -86,9 +106,8 @@ contract TimeLock {
 
 
 	receive() external payable {
-		companyBal[0x90F79bf6EB2c4f870365E785982E1f101E93b906] = 200;
-		companyBal[msg.sender] += msg.value;
-		}
+		emit companyDepositApproved(msg.sender, companies[msg.sender].balance);
+	}
 
 	// function companyDeposit() public payable {
 	// 	require(msg.value >= 0.1 ether, "balance entry is too low");
