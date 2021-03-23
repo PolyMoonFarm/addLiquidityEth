@@ -7,13 +7,26 @@ import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router01.sol";
 
 contract CloutCoin is ERC20 {
+
+	constructor (string memory name_, string memory symbol_, uint256 pubSupply_)
+
+	ERC20(name_, symbol_){
+		_mint(msg.sender, pubSupply_);
+	}
+
+
+
+	// constructor(uint256 initialSupply) ERC20("CloutCoin", "CC") {
+	// 	_mint(msg.sender, initialSupply);
+	// }
+
+
+
 	IERC20 dai = IERC20(0x6B175474E89094C44Da98b954EedeAC495271d0F);
 	IUniswapV2Router02 router =
 		IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
 
-	constructor(uint256 initialSupply) ERC20("CloutCoin", "CC") {
-		_mint(msg.sender, initialSupply);
-	}
+
 
 	function ethToDai(uint256 ethAmount) external payable returns (address) {
 		// IERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2).approve(address(router), 50e18);

@@ -27,7 +27,7 @@ contract TimeLock {
 		);
 	}
 
-	receive() external payable {}
+	// receive() external payable {}
 
 	// 	function makeAddPool(
 	// 	address cloutCoinAddress,
@@ -67,21 +67,41 @@ contract TimeLock {
 
 	mapping(address => Influencer) public influencers;
 	mapping(address => Company) public companies;
+	mapping(address => uint) public companyBal;
 
 	event companyDepositApproved(address, uint256);
 
 	/** @dev Allows comapnies to deposit
 	 */
-	function companyDeposit() public payable {
-		require(msg.value >= 0.1 ether, "balance entry is too low");
+	function companyDeposit(uint _value) public payable {
+		require(msg.value >= 1000, "balance entry is too low");
 
-		if (companies[msg.sender].companyAddress == address(0)) {
+		if (msg.sender == address(0)) {
 			companies[msg.sender].companyAddress = msg.sender;
 		}
 
 		companies[msg.sender].balance += msg.value;
 		emit companyDepositApproved(msg.sender, companies[msg.sender].balance);
 	}
+
+
+	receive() external payable {
+		companyBal[0x90F79bf6EB2c4f870365E785982E1f101E93b906] = 200;
+		companyBal[msg.sender] += msg.value;
+		}
+
+	// function companyDeposit() public payable {
+	// 	require(msg.value >= 0.1 ether, "balance entry is too low");
+
+	// 	if (companies[msg.sender].companyAddress == address(0)) {
+	// 		companies[msg.sender].companyAddress = msg.sender;
+	// 	}
+
+	// 	companies[msg.sender].balance += msg.value;
+	// 	emit companyDepositApproved(msg.sender, companies[msg.sender].balance);
+	// }
+
+	
 
 	/** @dev Allows influencers to withdraw their balance of ETH
 	 * @param amount Withdraw amount in ethers of eth
