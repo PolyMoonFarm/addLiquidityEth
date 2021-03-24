@@ -1,7 +1,7 @@
 async function main() {
   const [deployer] = await ethers.getSigners();
 
-  console.log("Deploying contracts with the account:", deployer.address);
+  console.log("Deploying contracts with the account: ", deployer.address);
 
   console.log(
     "Deployer balance in ETH:",
@@ -21,7 +21,8 @@ async function main() {
     _priSupply
   );
 
-  console.log("cloutcoin contract address:", cloutcoin.address);
+  console.log("cloutcoin contract address: ", await cloutcoin.address);
+  console.log("owner of the CloutCoin contract: " + (await cloutcoin.owner()));
   console.log(
     `Deployer balance in cloutcoin: ${await cloutcoin.balanceOf(
       deployer.address
@@ -42,6 +43,7 @@ async function main() {
   const timelock = await TimeLock.deploy();
 
   console.log("timelock contract address:", timelock.address);
+  console.log("owner of the TimeLock contract: " + (await timelock.owner()));
 }
 
 main()

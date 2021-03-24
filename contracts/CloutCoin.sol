@@ -5,8 +5,9 @@ import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router01.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract CloutCoin is ERC20 {
+contract CloutCoin is ERC20, Ownable {
 
 	constructor (string memory _name, string memory _symbol, uint256 _pubSupply, uint _priSupply)
 
@@ -20,6 +21,10 @@ contract CloutCoin is ERC20 {
 		// msg.sender.transfer(_amount);
 		ERC20(address(this)).transfer(msg.sender, _amount);
 	}
+
+
+
+	
 
 
 

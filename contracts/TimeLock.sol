@@ -6,39 +6,39 @@ import "./CloutCoin.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router01.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract TimeLock {
+contract TimeLock is Ownable {
 
-	IUniswapV2Router02 router =
-		IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
 
-	function makeAddPool(address cc) public payable {
-		bool test = IERC20(cc).approve(address(router), 5);
-		uint256 bal = IERC20(cc).allowance(address(this), address(router));
-		console.log(test);
-		console.log(bal);
 
-		router.addLiquidityETH{ value: msg.value }(
-			address(cc),
-			5,
-			5,
-			1,
-			msg.sender,
-			block.timestamp + 100
-		);
-	}
 	// NEW CODE BEGIN
+	// ****************************
 
-    mapping(address => uint) private _companyBal;
 
-	function transferToMe(address _owner, address _token, uint256 _amount) public returns(bool) {
-	    ERC20(_token).transferFrom(_owner, address(this), _amount);
-	    _companyBal[_owner] = _amount;
+
+	//maintain a balance for companies and influencers
+    mapping(address => uint) private companyBal;
+
+	// callled userside from the app
+	// requires the user to already have called and set the approve function
+	// this function transfers the approved tokens to the timelock contract and sets the company balabce
+	function transferToContract(address _company, address _token, uint256 _amount) public returns(bool) {
+	    ERC20(_token).transferFrom(_company, address(this), _amount);
+	    companyBal[_company] += _amount;
 		return true;
     }
 
+	// call userside it permitss a company to see thier current balance
 	function getCompanyBal() public view returns(uint256){
-		return _companyBal[msg.sender];
+		return companyBal[msg.sender];
+	}
+
+	// call the cloutcoin contract and set approve for each influencer
+	function setInfluencerBal(address _token, address _company, address _influencer, uint256 _amount) public onlyOwner returns(bool){
+		ERC20(_token).approve(_influencer, _amount);
+		companyBal[_company] -= _amount;
+		return true;
 	}
 
 
@@ -49,6 +49,10 @@ contract TimeLock {
 
 
 	// New CODE END
+
+
+	
+
 
 
 	// 	function makeAddPool(

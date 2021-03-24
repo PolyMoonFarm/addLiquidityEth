@@ -4,7 +4,7 @@ describe("Influencer Solidity Contract Testing", function () {
   //   // let IUniswapV2Router02;
 
   //   // let contract;
-  let owner, addr1, addr2, addr3;
+  let owner, addr1, addr2, addr3, addr4, addr5;
   //   // let cloutCoinAddress = 0x0dead;
   const _name = "CloutCoin";
   const _symbol = "CC";
@@ -18,16 +18,14 @@ describe("Influencer Solidity Contract Testing", function () {
 
     cloutcoin = await CloutCoin.deploy(_name, _symbol, _pubSupply, _priSupply);
     await cloutcoin.deployed();
-    [owner, addr1, addr2, addr3] = await ethers.getSigners();
+    [owner, addr1, addr2, addr3, addr4, addr5] = await ethers.getSigners();
     console.log("name: " + (await cloutcoin.name()));
     console.log("symbol: " + (await cloutcoin.symbol()));
+    console.log("CloutCoin contract owner: " + (await cloutcoin.owner()));
     console.log(
       "public supply: " +
-        (await cloutcoin.totalSupply()) -
-        (await cloutcoin.balanceOf(await cloutcoin.address))
-    );
-    console.log(
-      "public supply: " + (await cloutcoin.balanceOf(await cloutcoin.address))
+        ((await cloutcoin.totalSupply()) -
+          (await cloutcoin.balanceOf(await cloutcoin.address)))
     );
     console.log(
       "private supply: " + (await cloutcoin.balanceOf(await cloutcoin.address))
@@ -64,6 +62,7 @@ describe("Influencer Solidity Contract Testing", function () {
       const TimeLock = await ethers.getContractFactory("TimeLock");
       timelock = await TimeLock.deploy();
       console.log("timelock address: " + (await timelock.address));
+      console.log("timelock contract owner: " + (await cloutcoin.owner()));
       assert.ok(await timelock.address);
     } catch (error) {
       console.log(error);
@@ -72,10 +71,11 @@ describe("Influencer Solidity Contract Testing", function () {
 
   it("lets an address send clout to another address", async () => {
     try {
-      await cloutcoin.transfer(addr1.address, 10000);
-      assert.equal(await cloutcoin.balanceOf(addr1.address), 10000);
-      await cloutcoin.connect(addr1).transfer(addr2.address, 5000);
-      assert.equal(await cloutcoin.balanceOf(addr1.address), 5000);
+      await cloutcoin.transfer(addr1.address, 100000);
+      assert.equal(await cloutcoin.balanceOf(addr1.address), 100000);
+      await cloutcoin.connect(addr1).transfer(addr2.address, 20000);
+      assert.equal(await cloutcoin.balanceOf(addr1.address), 80000);
+      assert.equal(await cloutcoin.balanceOf(addr2.address), 20000);
       // console.log();
     } catch (error) {
       console.log(error);
@@ -88,20 +88,42 @@ describe("Influencer Solidity Contract Testing", function () {
 
   it("allows a token holder to  approve the transfer of tokens to the timelock contract address", async () => {
     // approve the transfer of tokens to the timelock contract and validate
-    await cloutcoin.connect(addr2).approve(timelock.address, 4000);
+    await cloutcoin.connect(addr2).approve(timelock.address, 10000);
     assert.equal(
       await cloutcoin.allowance(addr2.address, timelock.address),
-      4000
+      10000
     );
 
     // moves tokens to the timelock contract and verify
-    let tx = await timelock.transferToMe(
+    let tx = await timelock.transferToContract(
       addr2.address,
       cloutcoin.address,
-      4000
+      9000
     );
-    assert.equal(await cloutcoin.balanceOf(timelock.address), 4000);
-    assert.equal(await timelock.connect(addr2).getCompanyBal(), 4000);
+    assert.equal(await cloutcoin.balanceOf(timelock.address), 9000);
+    assert.equal(await timelock.connect(addr2).getCompanyBal(), 9000);
+  });
+
+  it("lets the owner execute the approve function on CC from TimeLock", async () => {
+    try {
+      // approve cloutcoin from timelock to influencers
+      await timelock.setInfluencerBal(
+        cloutcoin.address,
+        addr2.address,
+        addr4.address,
+        2000
+      );
+
+      // validates the approve function call allows a transferfrom and the timelock companyBal is adjusted
+      assert.equal(
+        await cloutcoin.allowance(timelock.address, addr4.address),
+        2000
+        //  vae the companybal decreased
+      );
+      assert.equal(await timelock.connect(addr2).getCompanyBal(), 7000);
+    } catch (error) {
+      console.log(error);
+    }
   });
 
   it("permits a user to request cloutcoin from the faucet", async () => {
