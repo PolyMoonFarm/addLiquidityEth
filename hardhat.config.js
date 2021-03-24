@@ -19,10 +19,15 @@ const { API_URL, PRIVATE_KEY, ETHERSCAN_API } = process.env;
 module.exports = {
   solidity: "0.7.5",
   networks: {
+    ganache: {},
     hardhat: {
       forking: {
         url: API_URL,
       },
+    },
+    ganache: {
+      url: "http://127.0.0.1:7545",
+      accounts: "remote",
     },
   },
   etherscan: {

@@ -8,8 +8,18 @@ async function main() {
     (await deployer.getBalance()).toString()
   );
 
+  // deploy the CloutCoin conttract
+  console.log("deploying the CloutCoin Contract .... ");
+  const _pubSupply = (200n * 10n ** 18n).toString();
+  const _priSupply = (200n * 10n ** 18n).toString();
+
   const CloutCoin = await ethers.getContractFactory("CloutCoin");
-  const cloutcoin = await CloutCoin.deploy("CloutCoin", "CC", 5);
+  const cloutcoin = await CloutCoin.deploy(
+    "CloutCoin",
+    "CC",
+    _pubSupply,
+    _priSupply
+  );
 
   console.log("cloutcoin contract address:", cloutcoin.address);
   console.log(
@@ -17,6 +27,21 @@ async function main() {
       deployer.address
     )}`
   );
+
+  console.log(
+    `cloutcoin contract balance in cloutcoin: ${await cloutcoin.balanceOf(
+      cloutcoin.address
+    )}`
+  );
+  console.log(`cloutcoin total supply: ${await cloutcoin.totalSupply()}`);
+
+  // deploy the TimeLock contract
+  console.log("deploying the TimeLock Contract .... ");
+
+  const TimeLock = await ethers.getContractFactory("TimeLock");
+  const timelock = await TimeLock.deploy();
+
+  console.log("timelock contract address:", timelock.address);
 }
 
 main()
