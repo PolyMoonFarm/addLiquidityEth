@@ -9,10 +9,6 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract TimeLock {
 
-	constructor() {
-		companyBal[0x90F79bf6EB2c4f870365E785982E1f101E93b906] += 2000;
-	}
-
 	IUniswapV2Router02 router =
 		IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
 
@@ -33,14 +29,21 @@ contract TimeLock {
 	}
 	// NEW CODE BEGIN
 
+    mapping(address => uint) private _companyBal;
 
-
-
-	function transferToMe(address _owner, address _token, uint _amount) public {
-      ERC20(_token).transferFrom(_owner, address(this), _amount);
+	function transferToMe(address _owner, address _token, uint256 _amount) public returns(bool) {
+	    ERC20(_token).transferFrom(_owner, address(this), _amount);
+	    _companyBal[_owner] = _amount;
+		return true;
     }
 
-	fallback() external payable {}
+	function getCompanyBal() public view returns(uint256){
+		return _companyBal[msg.sender];
+	}
+
+
+
+
 
 
 
@@ -86,7 +89,7 @@ contract TimeLock {
 
 	mapping(address => Influencer) public influencers;
 	mapping(address => Company) public companies;
-	mapping(address => uint) public companyBal;
+	// mapping(address => uint) public companyBal;
 
 	event companyDepositApproved(address, uint256);
 

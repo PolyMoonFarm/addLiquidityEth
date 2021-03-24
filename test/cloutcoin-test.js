@@ -6,21 +6,34 @@ describe("Influencer Solidity Contract Testing", function () {
   //   // let contract;
   let owner, addr1, addr2, addr3;
   //   // let cloutCoinAddress = 0x0dead;
-  const tName_ = "CloutCoin";
-  const tSymbol_ = "CC";
-  const tSupply_ = (200n * 10n ** 18n).toString();
+  const _name = "CloutCoin";
+  const _symbol = "CC";
+  const _pubSupply = (200n * 10n ** 18n).toString();
+  const _priSupply = (200n * 10n ** 18n).toString();
   let cloutcoin;
 
   before(async () => {
     // deploy cloutcoin
     const CloutCoin = await ethers.getContractFactory("CloutCoin");
 
-    cloutcoin = await CloutCoin.deploy(tName_, tSymbol_, tSupply_);
+    cloutcoin = await CloutCoin.deploy(_name, _symbol, _pubSupply, _priSupply);
     await cloutcoin.deployed();
     [owner, addr1, addr2, addr3] = await ethers.getSigners();
     console.log("name: " + (await cloutcoin.name()));
     console.log("symbol: " + (await cloutcoin.symbol()));
-    console.log("supply: " + (await cloutcoin.totalSupply()));
+    console.log(
+      "public supply: " +
+        (await cloutcoin.totalSupply()) -
+        (await cloutcoin.balanceOf(await cloutcoin.address))
+    );
+    console.log(
+      "public supply: " + (await cloutcoin.balanceOf(await cloutcoin.address))
+    );
+    console.log(
+      "private supply: " + (await cloutcoin.balanceOf(await cloutcoin.address))
+    );
+    console.log("total supply: " + (await cloutcoin.totalSupply()));
+
     console.log("cloutcoin address: " + (await cloutcoin.address));
     // console.log(accounts[3].address);
 
@@ -63,7 +76,7 @@ describe("Influencer Solidity Contract Testing", function () {
       assert.equal(await cloutcoin.balanceOf(addr1.address), 10000);
       await cloutcoin.connect(addr1).transfer(addr2.address, 5000);
       assert.equal(await cloutcoin.balanceOf(addr1.address), 5000);
-      // console.log(receipt2);
+      // console.log();
     } catch (error) {
       console.log(error);
     }
@@ -74,19 +87,30 @@ describe("Influencer Solidity Contract Testing", function () {
   // });
 
   it("allows a token holder to  approve the transfer of tokens to the timelock contract address", async () => {
-    // approve the transfer of tokens
+    // approve the transfer of tokens to the timelock contract and validate
     await cloutcoin.connect(addr2).approve(timelock.address, 4000);
-
-    // check to see the
     assert.equal(
       await cloutcoin.allowance(addr2.address, timelock.address),
       4000
     );
 
-    let tx = await timelock.transferToMe(addr2.address, timelock.address, 4000);
-    console.log("tx: " + tx);
+    // moves tokens to the timelock contract and verify
+    let tx = await timelock.transferToMe(
+      addr2.address,
+      cloutcoin.address,
+      4000
+    );
+    assert.equal(await cloutcoin.balanceOf(timelock.address), 4000);
+    assert.equal(await timelock.connect(addr2).getCompanyBal(), 4000);
+  });
 
-    // assert.equal(await cloutcoin.balanceOf(timelock.address), 4000);
+  it("permits a user to request cloutcoin from the faucet", async () => {
+    try {
+      await cloutcoin.connect(addr3).faucet(9999);
+      assert.equal(await cloutcoin.balanceOf(addr3.address), 9999);
+    } catch (error) {
+      console.log(error);
+    }
   });
 
   // it("Create/Add a balance to a project", async () => {

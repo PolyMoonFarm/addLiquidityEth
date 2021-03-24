@@ -8,17 +8,19 @@ import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router01.sol";
 
 contract CloutCoin is ERC20 {
 
-	constructor (string memory name_, string memory symbol_, uint256 pubSupply_)
+	constructor (string memory _name, string memory _symbol, uint256 _pubSupply, uint _priSupply)
 
-	ERC20(name_, symbol_){
-		_mint(msg.sender, pubSupply_);
+	ERC20(_name, _symbol){
+		_mint(msg.sender, _pubSupply);
+		_mint(address(this), _priSupply);
 	}
 
+	function faucet (uint256 _amount) external {
+		require(_amount <= 100000, "you ask for too much");
+		// msg.sender.transfer(_amount);
+		ERC20(address(this)).transfer(msg.sender, _amount);
+	}
 
-
-	// constructor(uint256 initialSupply) ERC20("CloutCoin", "CC") {
-	// 	_mint(msg.sender, initialSupply);
-	// }
 
 
 
@@ -60,5 +62,5 @@ contract CloutCoin is ERC20 {
 		return router.WETH();
 	}
 
-	//function receive() external payable {}
+	// receive() external payable {}
 }
